@@ -32,7 +32,9 @@ const signer = web3.eth.accounts.privateKeyToAccount(
   "cb4917f896c502fb844b59555e2f586464659b87c307e5ab563099dfccbba66e"
 );
 web3.eth.accounts.wallet.add(signer);
+
 // web3.eth.defaultAccount = CONTRACT_ADDRESS;
+// eslint-disable-next-line
 const contract = new web3.eth.Contract(CONTRACT_ABI);
 
 export default {
@@ -40,32 +42,38 @@ export default {
   data() {
     return {
       recipientAddress: "",
-      amount: 0,
+      amount: "0",
       loading: false,
     };
   },
   async mounted() {
-    const accounts = await web3.eth.getAccounts();
-    console.log(accounts);
-    // console.log(web3.eth);
+    //
   },
   methods: {
-    transfer() {
+    async transfer() {
       this.loading = true;
-      web3.eth
-        .sendTransaction({
-          from: contract.defaultAccount,
-          to: this.recipientAddress,
-          value: this.amount,
-        })
-        .then((receipt) => {
-          console.log(receipt);
-          this.recipientAddress = "";
-          this.amount = 0;
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      const transactionObject = {
+        from: "0xdA8bF18918746217D4f9b78596a89ba8152bAb9B",
+        to: this.recipientAddress,
+        value: web3.utils.toWei(this.amount.toString()),
+        gas: 21000,
+      };
+
+      // web3.eth
+      //   .estimateGas(transactionObject)
+      //   .then((response) => (transactionObject.gas = response))
+      //   .catch((error) => {
+      //     console.error(error);
+      //   });
+
+      // return console.log(transactionObject);
+
+      try {
+        const receipt = await web3.eth.sendTransaction(transactionObject);
+        console.log(receipt);
+      } catch (err) {
+        console.log(err);
+      }
       this.loading = false;
     },
   },
