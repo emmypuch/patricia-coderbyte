@@ -23,19 +23,17 @@
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from "./data/contract-info";
 const Web3 = require("web3");
 const web3 = new Web3(
-  new Web3.providers.HttpProvider(
-    "https://ropsten.infura.io/v3/45fb8c5b270b4e02bbb9b49f37b19ba9"
-  )
+  new Web3.providers.HttpProvider(process.env.VUE_APP_ROSPEN_URL)
 );
-// Creating a signing account from a private key
-const signer = web3.eth.accounts.privateKeyToAccount(
-  "cb4917f896c502fb844b59555e2f586464659b87c307e5ab563099dfccbba66e"
-);
-web3.eth.accounts.wallet.add(signer);
 
-// web3.eth.defaultAccount = CONTRACT_ADDRESS;
+// Creating a signing account from a private key
+const { address: signer } = web3.eth.accounts.wallet.add(
+  process.env.VUE_APP_PRIVATE_KEY
+);
+
 // eslint-disable-next-line
-const contract = new web3.eth.Contract(CONTRACT_ABI);
+const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+console.log(contract, signer);
 
 export default {
   name: "App",
@@ -46,33 +44,37 @@ export default {
       loading: false,
     };
   },
-  async mounted() {
-    //
-  },
   methods: {
     async transfer() {
       this.loading = true;
+      const tx = contract.methods.transfer(
+        this.recipientAddress,
+        web3.utils.toWei(this.amount.toString())
+      );
 
-      const address = await web3.eth.getAccounts()[0];
-      const nonce = await web3.eth.getTransactionCount(address);
-      const gas = web3.utils.toBN(21000);
+      const nonce = await web3.eth.getTransactionCount(signer);
+
       const gasPrice = await web3.eth.getGasPrice();
 
-      const transactionObject = {
-        from: address,
-        to: this.recipientAddress,
-        value: web3.utils.toWei(this.amount.toString()),
-        nonce,
-        gas,
+      const gasLimit = await web3.eth.getBlock("latest");
+
+      const data = tx.encodeABI();
+      const txData = {
+        from: signer,
+        to: contract.options.address,
+        data,
         gasPrice,
+        gasLimit: gasLimit.gasLimit,
+        nonce,
       };
 
       try {
-        const receipt = await web3.eth.sendTransaction(transactionObject);
+        const receipt = await web3.eth.sendTransaction(txData);
         console.log(receipt);
         this.loading = false;
       } catch (err) {
         console.log(err);
+        this.loading = false;
       }
     },
   },
