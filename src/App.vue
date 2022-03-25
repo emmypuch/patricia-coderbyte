@@ -6,19 +6,14 @@
         type="text"
         id="address"
         name="address"
-        placeholder="Eth Address"
+        placeholder="Ethereum Address"
         aria-label="Address to send eth"
       />
 
       <label for="amount">Enter Amount</label>
-      <input
-        type="number"
-        id="amount"
-        name="amount"
-        :value="`${cryptoAmount}BTC`"
-      />
+      <input type="number" id="amount" name="amount" />
       <div>
-        <button type="submit">Submit</button>
+        <button @click="submit" type="submit">Submit</button>
       </div>
     </form>
   </div>
