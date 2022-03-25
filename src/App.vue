@@ -52,29 +52,28 @@ export default {
   methods: {
     async transfer() {
       this.loading = true;
+
+      const address = await web3.eth.getAccounts()[0];
+      const nonce = await web3.eth.getTransactionCount(address);
+      const gas = web3.utils.toBN(21000);
+      const gasPrice = await web3.eth.getGasPrice();
+
       const transactionObject = {
-        from: "0xdA8bF18918746217D4f9b78596a89ba8152bAb9B",
+        from: address,
         to: this.recipientAddress,
         value: web3.utils.toWei(this.amount.toString()),
-        gas: 21000,
+        nonce,
+        gas,
+        gasPrice,
       };
-
-      // web3.eth
-      //   .estimateGas(transactionObject)
-      //   .then((response) => (transactionObject.gas = response))
-      //   .catch((error) => {
-      //     console.error(error);
-      //   });
-
-      // return console.log(transactionObject);
 
       try {
         const receipt = await web3.eth.sendTransaction(transactionObject);
         console.log(receipt);
+        this.loading = false;
       } catch (err) {
         console.log(err);
       }
-      this.loading = false;
     },
   },
 };
