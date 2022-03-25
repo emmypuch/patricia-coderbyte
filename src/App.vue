@@ -29,7 +29,7 @@ const web3 = new Web3(
 );
 // Creating a signing account from a private key
 const signer = web3.eth.accounts.privateKeyToAccount(
-  "dae5180cfa1d48d2a145f6b5aeb8f057"
+  "cb4917f896c502fb844b59555e2f586464659b87c307e5ab563099dfccbba66e"
 );
 web3.eth.accounts.wallet.add(signer);
 // web3.eth.defaultAccount = CONTRACT_ADDRESS;
