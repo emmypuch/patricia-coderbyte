@@ -7,7 +7,7 @@
         type="text"
         id="address"
         name="address"
-        aria-label="Address to send eth"
+        aria-label="Address to send ethereum"
       />
       <label for="amount">Enter Amount</label>
       <input type="number" id="amount" name="amount" v-model="amount" />
