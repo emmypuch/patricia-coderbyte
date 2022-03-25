@@ -1,35 +1,73 @@
 <template>
   <div id="app">
-    <form>
+    <div class="form">
       <label for="address">Ethereum Address</label>
       <input
+        v-model="recipientAddress"
         type="text"
         id="address"
         name="address"
-        placeholder="Ethereum Address"
         aria-label="Address to send eth"
       />
-
       <label for="amount">Enter Amount</label>
-      <input type="number" id="amount" name="amount" />
+      <input type="number" id="amount" name="amount" v-model="amount" />
       <div>
-        <button @click="submit" type="submit">Submit</button>
+        <button @click="transfer" :disabled="loading">Make Transfer</button>
       </div>
-    </form>
+    </div>
   </div>
 </template>
 
 <script>
+// eslint-disable-next-line
+import { CONTRACT_ABI, CONTRACT_ADDRESS } from "./data/contract-info";
 const Web3 = require("web3");
-const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
-import { CONTRACT_ABI } from "./data/contract-info";
+const web3 = new Web3(
+  new Web3.providers.HttpProvider(
+    "https://ropsten.infura.io/v3/45fb8c5b270b4e02bbb9b49f37b19ba9"
+  )
+);
+// Creating a signing account from a private key
+const signer = web3.eth.accounts.privateKeyToAccount(
+  "dae5180cfa1d48d2a145f6b5aeb8f057"
+);
+web3.eth.accounts.wallet.add(signer);
+// web3.eth.defaultAccount = CONTRACT_ADDRESS;
 const contract = new web3.eth.Contract(CONTRACT_ABI);
 
 export default {
   name: "App",
-  components: {},
-  mounted() {
-    console.log(contract);
+  data() {
+    return {
+      recipientAddress: "",
+      amount: 0,
+      loading: false,
+    };
+  },
+  async mounted() {
+    const accounts = await web3.eth.getAccounts();
+    console.log(accounts);
+    // console.log(web3.eth);
+  },
+  methods: {
+    transfer() {
+      this.loading = true;
+      web3.eth
+        .sendTransaction({
+          from: contract.defaultAccount,
+          to: this.recipientAddress,
+          value: this.amount,
+        })
+        .then((receipt) => {
+          console.log(receipt);
+          this.recipientAddress = "";
+          this.amount = 0;
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      this.loading = false;
+    },
   },
 };
 </script>
@@ -47,7 +85,7 @@ export default {
   align-items: center;
 }
 
-form {
+.form {
   background-color: teal;
   padding: 4rem;
   width: 60%;
@@ -86,10 +124,6 @@ input[type="number"] {
   margin-top: 15px;
 }
 
-::placeholder {
-  color: rgb(83, 170, 170);
-}
-
 button {
   margin-top: 30px;
   border: none;
@@ -102,7 +136,6 @@ button {
 }
 
 button:hover {
-  background: rgb(70, 158, 158);
-  transition: 3s ease-in;
+  background: rgb(179, 219, 219);
 }
 </style>
